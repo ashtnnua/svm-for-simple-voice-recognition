@@ -28,6 +28,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
 
 from sklearn.model_selection import train_test_split
+from sklearn.model_selection import cross_val_score
 from sklearn import metrics
 
 from sklearn.svm import SVC
@@ -80,13 +81,13 @@ enc = LabelEncoder()
 y['encLabel'] = enc.fit_transform(y['label'])
 y.head()
 
+X_train, X_test,  y_train, y_test = train_test_split(X,y['encLabel'])
+
 # Normalization
 
 scale = StandardScaler()
-X = pd.DataFrame(scale.fit_transform(X), columns = indepCols)
-X.head()
-
-X_train, X_test,  y_train, y_test = train_test_split(X,y['encLabel'])
+X_train = pd.DataFrame(scale.fit_transform(X_train), columns = indepCols)
+X_test = pd.DataFrame(scale.fit_transform(X_test), columns = indepCols)
 
 print(X_train.shape) #(2376, 17)
 X_train.head()
@@ -156,8 +157,6 @@ from sklearn.model_selection import GridSearchCV
 clf = GridSearchCV(svc, param_grid)
 clf.fit(X_train, y_train)
 
-clf.best_estimator_
-
 print(clf.best_params_)
 print(clf.best_estimator_)
 
@@ -165,11 +164,17 @@ print(clf.best_estimator_)
 
 # Using the best parameters from the parameter search
 
-svc = SVC(C=7, kernel = 'rbf', degree = 1, coef0 = 0.0)
+svc = SVC(C=7, kernel = 'poly', degree = 3, coef0 = 0.5)
 scores = cross_val_score(svc, X,y['encLabel'], cv = 7, scoring = 'accuracy')
 print(scores.mean())
-
 svc.fit(X_train, y_train)
-pred_test = svc.predict(X_test))
-print(metrics.accuracy_score(y_test, pred_test)
-# Accuracy improved from 0.9760 using def params to 0.9797..
+
+pred_test = svc.predict(X_test)
+print(metrics.accuracy_score(y_test, pred_test))
+# Accuracy improved from 0.9660 using def params to 0.9785..
+
+from sklearn.metrics import precision_score, recall_score
+
+print(precision_score(y_test, pred_test))
+print(recall_score(y_test, pred_test))
+
